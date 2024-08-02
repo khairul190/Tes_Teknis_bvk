@@ -74,10 +74,10 @@ OrderItems, and Inventory.
 - Index
 ![image](https://github.com/user-attachments/assets/40bd7735-1b79-441f-adcf-e66be6e94232)
 
-
-
 ### shipments Table 
+- Table structure
 ![image](https://github.com/user-attachments/assets/d383aff7-b37b-4b60-8028-8298d7f9c66e)
+- Index
 ![image](https://github.com/user-attachments/assets/0a104a41-84eb-4484-9e75-29a6053a397d)
 
 
