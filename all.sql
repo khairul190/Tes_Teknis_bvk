@@ -114,8 +114,6 @@ CREATE NONCLUSTERED INDEX idx_categories
 ON dwh_ecommerce.ecommerce.categories (category_name);
 
 --=================== DML =======================
-INSERT INTO ecommerce.couriers (courier_name) VALUES ('JNT'), ('JNE'), ('TIKI');
-
 --Update the inventory quantity after an order is placed.
 CREATE TRIGGER trg_UpdateInventory
 ON dwh_ecommerce.ecommerce.order_items AFTER
@@ -128,6 +126,168 @@ ON i.inventory_id = p.inventory_id
 
 INNER JOIN inserted ins
 ON p.product_id = ins.product_id END;
+
+-- 1.
+INSERT INTO ecommerce.couriers (courier_name) VALUES ('JNT'), ('JNE'), ('TIKI');
+
+-- 2.
+CREATE PROCEDURE ecommerce.AddProduct
+    @product_name VARCHAR(100),
+    @category_name VARCHAR(100),
+    @price DECIMAL(10, 2),
+    @quantity INT,
+    @discount_name VARCHAR(100),
+    @discount_percent int,
+    @delete_at datetime
+AS
+BEGIN
+    -- Mulai transaksi
+    BEGIN TRANSACTION;
+    
+        DECLARE @ProductID UNIQUEIDENTIFIER;
+        DECLARE @CategoryID UNIQUEIDENTIFIER;
+        DECLARE @InventoryID UNIQUEIDENTIFIER;
+        DECLARE @DiscountID UNIQUEIDENTIFIER;
+        
+        SET @ProductID = NEWID();
+        SET @CategoryID = NEWID();
+        SET @InventoryID = NEWID();
+        SET @DiscountID = NEWID();
+  
+        INSERT INTO ecommerce.categories (category_id, category_name)
+        VALUES (@CategoryID, @category_name);
+        
+        
+        INSERT INTO ecommerce.inventory (inventory_id, stock_quantity)
+        VALUES (@InventoryID, @quantity);
+        
+        
+        INSERT INTO ecommerce.products (product_id, product_name, category_id,inventory_id,discount_id, price)
+        VALUES (@ProductID, @product_name, @CategoryID,@InventoryID,@DiscountID, @price);
+
+        INSERT INTO ecommerce.products_discount (discount_id ,discount_name ,discount_percent ,deleted_at)
+        VALUES (@DiscountID, @discount_name, @discount_percent, @delete_at);
+       
+        COMMIT TRANSACTION;
+        PRINT 'Product successfully added.';
+END;
+GO
+
+
+CREATE PROCEDURE ecommerce.AddCustomer
+    @customer_name VARCHAR(100),
+    @email VARCHAR(100),
+    @phone VARCHAR(20),
+    @address_line VARCHAR(255),
+    @city VARCHAR(100),
+    @province VARCHAR(100)
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    
+        DECLARE @CustomerID UNIQUEIDENTIFIER;
+        DECLARE @AddressID UNIQUEIDENTIFIER;
+        
+        SET @CustomerID = NEWID();
+        SET @AddressID = NEWID();
+
+        INSERT INTO ecommerce.customers (customer_id, customer_name, email, phone, address_id)
+        VALUES (@CustomerID, @customer_name, @email, @phone, @AddressID);
+        
+        INSERT INTO ecommerce.customers_address  (address_id,  address_line, city,province)
+        VALUES (@AddressID, @address_line, @city, @province);
+        
+        COMMIT TRANSACTION;
+        PRINT 'Product successfully added.';
+
+END;
+GO
+
+
+
+CREATE PROCEDURE ecommerce.addOrders
+    @CustomerName VARCHAR(100),
+    @product_name VARCHAR(100),
+    @courier_name VARCHAR(100),
+    @order_date date,
+    @shipment_date date,
+    @status VARCHAR(50),
+    @quantity int
+AS
+BEGIN
+    BEGIN TRANSACTION;
+    
+        DECLARE @OrderID UNIQUEIDENTIFIER;
+        DECLARE @ShipmentID UNIQUEIDENTIFIER;
+       	DECLARE @OrdersItemID UNIQUEIDENTIFIER;
+       	DECLARE @tracking_no UNIQUEIDENTIFIER;
+    	DECLARE @DiscountID UNIQUEIDENTIFIER;
+       
+        DECLARE @CustomerID UNIQUEIDENTIFIER;
+       	DECLARE @CourierID UNIQUEIDENTIFIER;
+       	DECLARE @ProductID UNIQUEIDENTIFIER;
+     	DECLARE @price DECIMAL(10, 2);
+     	DECLARE @discount_percent int;
+     	DECLARE @result_price DECIMAL(18, 2);
+        
+        SET @OrderID = NEWID();
+        SET @ShipmentID = NEWID();
+        SET @OrdersItemID = NEWID();
+        SET @tracking_no = NEWID();
+       
+       	SET @CustomerID = (select customer_id from ecommerce.customers where customer_name = @CustomerName);
+       	SET @CourierID = (select courier_id from ecommerce.couriers  where courier_name  = @courier_name);
+       	SET @ProductID = (select product_id from ecommerce.products where product_name  = @product_name);
+        SET @DiscountID = (select discount_id from ecommerce.products where product_name  = @product_name);
+        SET @discount_percent = (select discount_percent from ecommerce.products_discount pd  where discount_id = @DiscountID);
+       	SET @price = (select price from ecommerce.products where product_name = @product_name);
+       	
+       	SET @result_price = @quantity * (@price * (1 - @discount_percent/100.0))    
+ 
+        INSERT INTO ecommerce.orders (order_id , customer_id , order_date)
+        VALUES (@OrderID, @CustomerID, @order_date);
+        
+        INSERT INTO ecommerce.shipments (shipment_id , order_id ,shipment_date, courier_id ,tracking_number, status)
+        VALUES (@ShipmentID, @OrderID, @shipment_date, @CourierID, @tracking_no, @status);
+
+        INSERT INTO ecommerce.order_items (order_item_id  , order_id ,product_id , quantity  ,price)
+        VALUES (@OrdersItemID, @OrderID, @ProductID, @quantity, @result_price);
+       
+        COMMIT TRANSACTION;
+        PRINT 'Product successfully added.';
+END;
+GO
+
+
+EXEC ecommerce.addOrders
+    @CustomerName = 'Dafi',
+    @product_name = 'T-Shirt',
+    @courier_name = 'TIKI',
+    @order_date = '2024-06-05',
+    @shipment_date = '2024-06-07',
+    @status = 'Delivered',
+    @quantity = 4;
+
+   
+EXEC ecommerce.AddCustomer
+    @customer_name = 'Sapo',
+    @email = 'Sapo@gmail.com',
+    @phone = '08211232349',
+    @address_line = 'Perkasa BLOK M no. 1',
+    @city = 'Palangkaraya',
+    @province = 'Kalimantan Selatan';
+   
+
+
+EXEC ecommerce.AddProduct 
+    @product_name = 'Hary Potter',
+    @category_name = 'Books',
+    @price = 159999.00,
+    @quantity = 100,
+    @discount_name = 'DISCOUNT TOKO',
+    @discount_percent = 8,
+    @delete_at = '2024-12-31 23:59:59';
+
 
 
 --Retrieve the list of all products along with their categories.
