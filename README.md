@@ -108,13 +108,13 @@ OrderItems, and Inventory.
 
 6. Update the inventory quantity after an order is placed.
     ![image](https://github.com/user-attachments/assets/6e56f403-5d54-4e86-8097-9513624b632a)
-- Inventory before order is placed
+  - Inventory before order is placed
   
-  ![image](https://github.com/user-attachments/assets/80001b92-8bf9-4e97-bcae-b746a318374e)
+    ![image](https://github.com/user-attachments/assets/80001b92-8bf9-4e97-bcae-b746a318374e)
 
-- Inventory After orser is placed
+  - Inventory After orser is placed
 
-  ![image](https://github.com/user-attachments/assets/d1e3bc59-0bd0-4ba4-96cd-3f68ec86fab0)
+    ![image](https://github.com/user-attachments/assets/d1e3bc59-0bd0-4ba4-96cd-3f68ec86fab0)
 
 7. Find the top 3 best-selling products by quantity sold.
     ![image](https://github.com/user-attachments/assets/7960e43a-acb8-4338-aa6c-14a019ca8bdc)
