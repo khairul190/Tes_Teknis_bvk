@@ -88,6 +88,7 @@ OrderItems, and Inventory.
   ![image](https://github.com/user-attachments/assets/9b53e40e-c853-407a-b23d-14b5940a7dce)
 
 - Manual Adding using insert
+  
    ![image](https://github.com/user-attachments/assets/bf48ade8-5667-458d-9471-4b07b507c231)
 
 2. Retrieve the list of all products along with their categories.
@@ -111,6 +112,7 @@ OrderItems, and Inventory.
   ![image](https://github.com/user-attachments/assets/80001b92-8bf9-4e97-bcae-b746a318374e)
 
 - Inventory After orser is placed
+  
 ![image](https://github.com/user-attachments/assets/d1e3bc59-0bd0-4ba4-96cd-3f68ec86fab0)
 
 12. Find the top 3 best-selling products by quantity sold.
